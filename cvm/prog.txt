@@ -1,0 +1,9 @@
+  println "Hello, World!"
+
+function main
+	repeat 1000
+		print "lol"
+	endrepeat	
+endfunc
+
+call main
