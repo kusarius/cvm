@@ -26,33 +26,33 @@ public:
 		return buffer.str();
 	}
 
-	static std::vector<std::string> Split(const std::string &s, char delim)
+	static inline std::vector<std::string> Split(const std::string &s, char delim)
 	{
 		std::vector<std::string> elems;
 		split(s, delim, elems);
 		return elems;
 	}
 
-	static void Trim(std::string& str)
+	static std::string Trim(std::string& str, char ch1 = ' ', char ch2 = '\t', char ch3 = ' ')
 	{
 		int len = str.length();
 		int start = 0, end = len - 1;
 		for (int i = 0; i < len; ++i)
 		{
-			if (str[i] != ' ' && str[i] != '\t')
+			if (str[i] != ch1 && str[i] != ch2 && str[i] != ch3)
 				break;
 			start++;
 		}
 		for (int i = len - 1; i >= 0; --i)
 		{
-			if (str[i] != ' ' && str[i] != '\t')
+			if (str[i] != ch1 && str[i] != ch2 && str[i] != ch3)
 				break;
 			end--;
 		}
-		str = str.substr(start, end - start + 1);
+		return str.substr(start, end - start + 1);
 	}
 
-	static bool StartsWith(std::string s1, std::string s2)
+	static inline bool StartsWith(std::string s1, std::string s2)
 	{
 		return s2.size() <= s1.size() && s1.compare(0, s2.size(), s2) == 0;
 	}

@@ -2,13 +2,15 @@
 #include "utils.h"
 #include <iostream>
 
+#define REMOVE_BRACKETS(str) Utils::Trim(str, '\"', '\"', '\"')
+
 // Убирает из кода комментарии и пустые строки
 void Cell::CellLang::RefactorCode(std::vector<std::string>& code_lines)
 {
 	int lcount = code_lines.size();
 	for (int i = 0; i < lcount; ++i)
 	{
-		Utils::Trim(code_lines[i]);
+		code_lines[i] = Utils::Trim(code_lines[i]);
 		if (code_lines[i] == "" || Utils::StartsWith(code_lines[i], "#"))
 		{
 			code_lines.erase(code_lines.begin() + i);
@@ -48,6 +50,21 @@ std::vector<Cell::CellToken> Cell::CellLang::GetTokens(std::vector<std::string> 
 	return toks;
 }
 
+void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks)
+{
+	int toks_size = toks.size();
+	for (int i = 0; i < toks_size; ++i)
+		if (toks[i].Command == "print") {
+			if (toks[i].Command == toks[i].Arg) WriteError(toks[i].Command, "", "Argument expected", i + 1);
+			std::cout << REMOVE_BRACKETS(toks[i].Arg);
+		}
+		else if (toks[i].Command == "println") {
+			if (toks[i].Command == toks[i].Arg) WriteError(toks[i].Command, "", "Argument expected", i + 1);
+			std::cout << REMOVE_BRACKETS(toks[i].Arg) << std::endl;
+		}
+
+}
+
 void Cell::CellLang::Interpret(std::vector<std::string> code_lines)
 {
 	std::vector<std::string> cells(10, "");
@@ -57,10 +74,5 @@ void Cell::CellLang::Interpret(std::vector<std::string> code_lines)
 	std::vector<Cell::CellToken> toks = GetTokens(code_lines);
 	Link(toks);
 
-	int toks_size = toks.size();
-	for (int i = 0; i < toks_size; ++i)
-		if (toks[i].Command == "print")
-		{
-
-		}
+	ProcessCommands(toks);
 }
