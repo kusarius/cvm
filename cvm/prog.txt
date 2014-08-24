@@ -1,9 +1,7 @@
- # println "
-
-function main
-	repeat 1000
-	#	print "lol"
-	endrepeat	
-endfunc
-
-call main
+set "Hello, World!"
+right k
+set "Lol!"
+left
+println data
+right
+println data

@@ -81,10 +81,20 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 				else memory = REMOVE_BRACKETS(toks[i].Arg);
 			}
 		}
-		else if (toks[i].Command == "right") {
-			if (toks[i].Arg == toks[i].Command) acell++;
+		else if (toks[i].Command == "right" || toks[i].Command == "left") {
+			int direction = toks[i].Command == "right" ? 1 : -1;
+			if (toks[i].Arg == toks[i].Command) acell += direction;
 			else {
-				
+				char* endptr;
+				const char* ptr = toks[i].Arg.c_str();
+				int val = std::strtol(ptr, &endptr, 10);
+				if (ptr == endptr) WriteError("Invalid argument", i + 1);
+				else acell += val * direction;
+			}
+			if (acell < 0) { WriteError("Number of active cell cannot be less than 0", i + 1); acell = 0; }
+			if (acell >= (int)cells.size()) { 
+				WriteError("Number of active cell cannot be greater than allowable; use \"cells\" command", i + 1);
+				acell = cells.size() - 1; 
 			}
 		}
 		else WriteError("Unknown command", i + 1);
