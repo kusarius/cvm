@@ -84,7 +84,7 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 		else if (toks[i].Command == "right") {
 			if (toks[i].Arg == toks[i].Command) acell++;
 			else {
-
+				
 			}
 		}
 		else WriteError("Unknown command", i + 1);
