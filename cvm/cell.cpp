@@ -132,7 +132,7 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 					bool found = false;
 					for (int c = i + 1; c < toks_size; ++c)
 						if (toks[c].Command == "endif") {
-							i = c + 1;
+							i = c;
 							found = true;
 							break;
 						}

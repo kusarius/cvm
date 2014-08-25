@@ -1,17 +1,17 @@
 set read
-println data
+
 if 0
-	println "Введённое число равно нулю"
+	print "= 0"
+	exit
 endif
 
-memory "1"
-println memory
+memory 0
 max
 set acc
 
 if 0
-	println "Введённое число меньше нуля"
+	println "< 0"
 	exit
 endif
 
-println "Введённое число больше нуля"
+println "> 0"
