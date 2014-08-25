@@ -24,8 +24,4 @@ int main(int argc, char** argv)
 	vector<string> code_lines = Utils::Split(code, '\n');
 	CellLang* cell = new CellLang();
 	cell->Interpret(code_lines);
-
-	unsigned int work_time = clock();
-	cout << endl << work_time << " milliseconds" << endl;
-	cin.get();
 }

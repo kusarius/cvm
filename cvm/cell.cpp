@@ -1,10 +1,12 @@
 #include "cell.h"
 #include "utils.h"
 #include <iostream>
+#include <stdlib.h>
+#include <math.h>
 
 #define REMOVE_BRACKETS(str) Utils::Trim(str, '\"', '\'', '\"')
 
-// Убирает из кода комментарии и пустые строки
+// РЈР±РёСЂР°РµС‚ РёР· РєРѕРґР° РєРѕРјРјРµРЅС‚Р°СЂРёРё Рё РїСѓСЃС‚С‹Рµ СЃС‚СЂРѕРєРё
 void Cell::CellLang::RefactorCode(std::vector<std::string>& code_lines)
 {
 	int lcount = code_lines.size();
@@ -20,27 +22,27 @@ void Cell::CellLang::RefactorCode(std::vector<std::string>& code_lines)
 	}
 }
 
-// Выводит описание ошибки в консоль
+// Р’С‹РІРѕРґРёС‚ РѕРїРёСЃР°РЅРёРµ РѕС€РёР±РєРё РІ РєРѕРЅСЃРѕР»СЊ
 void Cell::CellLang::WriteError(std::string description, int comnumber)
 {
 	std::cout << std::endl << "Error in command " << comnumber << ": "
 		<< description << std::endl;
 }
 
-// Обрабатывает команды import
+// РћР±СЂР°Р±Р°С‚С‹РІР°РµС‚ РєРѕРјР°РЅРґС‹ import
 void Cell::CellLang::Link(std::vector<CellToken>& toks)
 {
 	// ...
 }
 
-// Разделяет код на токены
+// Р Р°Р·РґРµР»СЏРµС‚ РєРѕРґ РЅР° С‚РѕРєРµРЅС‹
 std::vector<Cell::CellToken> Cell::CellLang::GetTokens(std::vector<std::string> code_lines)
 {
 	std::vector<Cell::CellToken> toks;
 	int lcount = code_lines.size();
 	for (int i = 0; i < lcount; ++i)
 	{
-		int wspos = code_lines[i].find(" "); // Позиция первого пробела в строке
+		int wspos = code_lines[i].find(" "); // РџРѕР·РёС†РёСЏ РїРµСЂРІРѕРіРѕ РїСЂРѕР±РµР»Р° РІ СЃС‚СЂРѕРєРµ
 		Cell::CellToken tok = Cell::CellToken();
 		tok.Command = code_lines[i].substr(0, wspos);
 		tok.Arg = code_lines[i].substr(wspos + 1, code_lines[i].size() - wspos - 1);
@@ -70,6 +72,7 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 			else {
 				if (toks[i].Arg == "memory") cells[acell] = memory;
 				else if (toks[i].Arg == "acc") cells[acell] = acc;
+				else if (toks[i].Arg == "read") cells[acell] = Utils::ReadLine();
 				else cells[acell] = REMOVE_BRACKETS(toks[i].Arg);
 			}
 		} 
@@ -78,6 +81,7 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 			else {
 				if (toks[i].Arg == "data") memory = cells[acell];
 				else if (toks[i].Arg == "acc") memory = acc;
+				else if (toks[i].Arg == "read") memory = Utils::ReadLine();
 				else memory = REMOVE_BRACKETS(toks[i].Arg);
 			}
 		}
@@ -87,7 +91,7 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 			else {
 				char* endptr;
 				const char* ptr = toks[i].Arg.c_str();
-				int val = std::strtol(ptr, &endptr, 10);
+				int val = strtol(ptr, &endptr, 10);
 				if (ptr == endptr) WriteError("Invalid argument", i + 1);
 				else acell += val * direction;
 			}
@@ -97,15 +101,55 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 				acell = cells.size() - 1; 
 			}
 		}
+		else if (toks[i].Command == "add" || toks[i].Command == "sub" ||
+				toks[i].Command == "mul" || toks[i].Command == "div" ||
+				toks[i].Command == "sqrt" || toks[i].Command == "pow" ||
+				toks[i].Command == "min" || toks[i].Command == "max")
+		{
+			float arg1, arg2; // РћРїРµСЂР°РЅРґС‹
+			arg1 = Utils::StringToNum<float>(cells[acell]);
+			if (toks[i].Command != "sqrt") arg2 = Utils::StringToNum<float>(memory);
+			if (arg1 == INT_MIN || arg2 == INT_MIN) { // Р•СЃР»Рё РЅРµРґРѕРїСѓСЃС‚РёРјС‹Рµ Р°СЂРіСѓРјРµРЅС‚С‹
+				WriteError("Invalid arguments!", i + 1);
+				continue;
+			}
+			std::string com = toks[i].Command;
+			if (com == "add") acc = Utils::ToString<float>(arg1 + arg2);
+			else if (com == "sub") acc = Utils::ToString<float>(arg1 - arg2);
+			else if (com == "mul") acc = Utils::ToString<float>(arg1 * arg2);
+			else if (com == "div") acc = Utils::ToString<float>(arg1 / arg2);
+			else if (com == "sqrt") acc = Utils::ToString<float>(sqrtf(arg1));
+			else if (com == "pow") acc = Utils::ToString<float>(powf(arg1, arg2));
+			else if (com == "min") acc = Utils::ToString<float>(arg1 < arg2 ? arg1 : arg2);
+			else if (com == "max") acc = Utils::ToString<float>(arg1 > arg2 ? arg1 : arg2);
+		}
+		else if (toks[i].Command == "if" || toks[i].Command == "ifn") {
+			if (toks[i].Command == toks[i].Arg) WriteError("Argument expected", i + 1);
+			else {
+				std::string arg = REMOVE_BRACKETS(toks[i].Arg);
+				bool val = toks[i].Command == "if" ? false : true;
+				if ((cells[acell] == arg) == val) {
+					bool found = false;
+					for (int c = i + 1; c < toks_size; ++c)
+						if (toks[c].Command == "endif") {
+							i = c + 1;
+							found = true;
+							break;
+						}
+					if (found == false) WriteError("\"endif\" expected", i + 1);
+				}
+			}
+		}
+		else if (toks[i].Command == "endif") { }
+		else if (toks[i].Command == "exit") break;
 		else WriteError("Unknown command", i + 1);
-
 }
 
 void Cell::CellLang::Interpret(std::vector<std::string> code_lines)
 {
 	std::vector<std::string> cells(10, "");
 	std::string memory = "", acc = "";
-	int ccell = 0; // Номер активной ячейки
+	int ccell = 0; // РќРѕРјРµСЂ Р°РєС‚РёРІРЅРѕР№ СЏС‡РµР№РєРё
 
 	RefactorCode(code_lines);
 	std::vector<Cell::CellToken> toks = GetTokens(code_lines);

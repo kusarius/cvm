@@ -4,6 +4,8 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <iostream>
+#include <climits>
 
 class Utils
 {
@@ -17,6 +19,21 @@ private:
 	}
 
 public:
+	template<typename T>
+	static std::string ToString(T arg)
+	{
+		std::stringstream ss;
+		ss << arg;
+		return ss.str();
+	}
+	
+	static std::string ReadLine()
+	{
+		std::string res;
+		std::getline(std::cin, res);
+		return res;
+	}
+
 	static std::string ReadTextFromFile(char* file_name)
 	{
 		std::ifstream f(file_name);
@@ -31,6 +48,17 @@ public:
 		std::vector<std::string> elems;
 		split(s, delim, elems);
 		return elems;
+	}
+
+	// Converts string to a number. Return INT_MIN, if conversion was failed
+	template<typename T>
+	static T StringToNum(std::string str)
+	{
+		std::stringstream stream;
+   		stream << str;
+   		T res; 
+   		if(stream >> res) return res;
+   		else return INT_MIN;
 	}
 
 	static std::string Trim(std::string& str, char ch1 = ' ', char ch2 = '\t', char ch3 = ' ')

@@ -1,7 +1,17 @@
-set "Hello, World!"
-right k
-set "Lol!"
-left
+set read
 println data
-right
-println data
+if 0
+	println "Введённое число равно нулю"
+endif
+
+memory "1"
+println memory
+max
+set acc
+
+if 0
+	println "Введённое число меньше нуля"
+	exit
+endif
+
+println "Введённое число больше нуля"
