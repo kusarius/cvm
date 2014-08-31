@@ -115,27 +115,27 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 				WriteError("Invalid arguments!", i + 1);
 				continue;
 			}
-			std::string com = com;
-			if (com == "add") acc = Utils::ToString<float>(arg1 + arg2);
-			else if (com == "sub") acc = Utils::ToString<float>(arg1 - arg2);
-			else if (com == "mul") acc = Utils::ToString<float>(arg1 * arg2);
-			else if (com == "div") acc = Utils::ToString<float>(arg1 / arg2);
-			else if (com == "sqrt") acc = Utils::ToString<float>(sqrtf(arg1));
-			else if (com == "pow") acc = Utils::ToString<float>(powf(arg1, arg2));
-			else if (com == "min") acc = Utils::ToString<float>(arg1 < arg2 ? arg1 : arg2);
-			else if (com == "max") acc = Utils::ToString<float>(arg1 > arg2 ? arg1 : arg2);
+			std::string action = com;
+			if (action == "add") acc = Utils::ToString<float>(arg1 + arg2);
+			else if (action == "sub") acc = Utils::ToString<float>(arg1 - arg2);
+			else if (action == "mul") acc = Utils::ToString<float>(arg1 * arg2);
+			else if (action == "div") acc = Utils::ToString<float>(arg1 / arg2);
+			else if (action == "sqrt") acc = Utils::ToString<float>(sqrtf(arg1));
+			else if (action == "pow") acc = Utils::ToString<float>(powf(arg1, arg2));
+			else if (action == "min") acc = Utils::ToString<float>(arg1 < arg2 ? arg1 : arg2);
+			else if (action == "max") acc = Utils::ToString<float>(arg1 > arg2 ? arg1 : arg2);
 		}
 		else if (com == "if" || com == "ifnot") {
 			if (com == toks[i].Arg) WriteError("Argument expected", i + 1);
 			else {
 				std::string arg = REMOVE_BRACKETS(toks[i].Arg);
 				bool val = com == "if" ? false : true;
-				int nesting = 1; // Степень вложенности
 				if ((cells[acell] == arg) == val) {
+					int nesting = 1; // Степень вложенности
 					bool found = false;
-					for (int c = i + 1; c < toks_size; ++c) {
+					for (int c = i + 1; c < toks_size; ++c)
 						if (toks[c].Command == "if" || toks[c].Command == "ifnot") nesting++;
-						if (toks[c].Command == "endif") {
+						else if (toks[c].Command == "endif") {
 							nesting--;
 							if (nesting < 1) {
 								i = c; // Переходим на строку кода с endif
@@ -143,7 +143,6 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 								break;
 							}
 						}
-					}
 					if (found == false) WriteError("\"endif\" expected", i + 1);
 				}
 			}
@@ -156,13 +155,13 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 				if (toks[c].Command == "endrepeat") {
 					nesting--;
 					if (nesting < 1) {
-						std::vector<Cell::CellToken> subtoks(toks.begin() + i + 1, toks.begin() + c - 1);	
+						std::vector<Cell::CellToken> subtoks(toks.begin() + i + 1, toks.begin() + c);	
 						if (com == toks[i].Arg)
 							while (true) ProcessCommands(subtoks, memory, acc, cells, acell);
 						else {
 							int rtimes = Utils::StringToNum<int>(toks[i].Arg);
 							if (rtimes == INT_MIN) WriteError("Invalid argument", i + 1);
-							else for (int h = 0; h < rtimes; ++h) ProcessCommands(subtoks, memory, acc, cells, acell);
+							else for (int h = 0; h < rtimes - 1; ++h) ProcessCommands(subtoks, memory, acc, cells, acell);
 						}	
 						found = true;	
 						break;
