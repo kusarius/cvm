@@ -55,7 +55,7 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 	std::vector<std::string> cells, int& acell)
 {
 	int toks_size = toks.size();
-	std::string com = "";
+	std::string com = ""; // Команда в текущей строке
 	for (int i = 0; i < toks_size; ++i) {
 		com = toks[i].Command;
 		if (com == "print" || com == "println") {

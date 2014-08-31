@@ -56,8 +56,8 @@ public:
 	{
 		std::stringstream stream;
    		stream << str;
-   		T res; 
-   		if(stream >> res) return res;
+   		T res;
+   		if (stream >> res) return res;
    		else return INT_MIN;
 	}
 

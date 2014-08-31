@@ -1,17 +1,3 @@
-set read
-
-if 0
-	print "= 0"
-	exit
-endif
-
-memory 0
-max
-set acc
-
-if 0
-	println "< 0"
-	exit
-endif
-
-println "> 0"
+repeat 10
+	println "Hello, World!"
+endrepeat
