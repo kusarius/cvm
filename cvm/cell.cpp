@@ -91,10 +91,8 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 			int direction = com == "right" ? 1 : -1;
 			if (toks[i].Arg == com) acell += direction;
 			else {
-				char* endptr;
-				const char* ptr = toks[i].Arg.c_str();
-				int val = strtol(ptr, &endptr, 10);
-				if (ptr == endptr) WriteError("Invalid argument", i + 1);
+				int val = Utils::StringToNum<int>(toks[i].Arg);
+				if (val == INT_MIN) WriteError("Invalid argument", i + 1);
 				else acell += val * direction;
 			}
 			if (acell < 0) { WriteError("Number of active cell cannot be less than 0", i + 1); acell = 0; }
