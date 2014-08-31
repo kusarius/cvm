@@ -15,7 +15,7 @@ namespace Cell
 
 	private:
 		void RefactorCode(std::vector<std::string>& code_lines);
-		void Link(std::vector<CellToken>& toks);
+		void Link(std::vector<std::string>& toks);
 		std::vector<CellToken> GetTokens(std::vector<std::string> code_lines);
 		void ProcessCommands(std::vector<Cell::CellToken> toks, std::string& memory, std::string& acc,
 			std::vector<std::string> cells, int& ccell);

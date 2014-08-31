@@ -30,7 +30,7 @@ void Cell::CellLang::WriteError(std::string description, int comnumber)
 }
 
 // Обрабатывает команды import
-void Cell::CellLang::Link(std::vector<CellToken>& toks)
+void Cell::CellLang::Link(std::vector<std::string>& toks)
 {
 	// ...
 }
@@ -123,7 +123,7 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 			else if (com == "min") acc = Utils::ToString<float>(arg1 < arg2 ? arg1 : arg2);
 			else if (com == "max") acc = Utils::ToString<float>(arg1 > arg2 ? arg1 : arg2);
 		}
-		else if (toks[i].Command == "if" || toks[i].Command == "ifn") {
+		else if (toks[i].Command == "if" || toks[i].Command == "ifnot") {
 			if (toks[i].Command == toks[i].Arg) WriteError("Argument expected", i + 1);
 			else {
 				std::string arg = REMOVE_BRACKETS(toks[i].Arg);
@@ -152,8 +152,8 @@ void Cell::CellLang::Interpret(std::vector<std::string> code_lines)
 	int ccell = 0; // Номер активной ячейки
 
 	RefactorCode(code_lines);
+	Link(code_lines);
 	std::vector<Cell::CellToken> toks = GetTokens(code_lines);
-	Link(toks);
 
 	ProcessCommands(toks, memory, acc, cells, ccell);
 }
