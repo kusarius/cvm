@@ -156,16 +156,14 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 				if (toks[c].Command == "endrepeat") {
 					nesting--;
 					if (nesting < 1) {
-						std::vector<Cell::CellToken> subtoks(toks.begin() + i + 1, toks.begin() + c - 1);
-						
-						if (com = toks[i].Arg) 
-							while (true) ProcessCommands(subtoks, memory, acc, cells, ccell);
+						std::vector<Cell::CellToken> subtoks(toks.begin() + i + 1, toks.begin() + c - 1);	
+						if (com == toks[i].Arg)
+							while (true) ProcessCommands(subtoks, memory, acc, cells, acell);
 						else {
-							int rtimes = Utils::StringToNum(toks[i].Arg);
+							int rtimes = Utils::StringToNum<int>(toks[i].Arg);
 							if (rtimes == INT_MIN) WriteError("Invalid argument", i + 1);
-							else for (int h = 0; h < rtimes; ++h) ProcessCommands(subtoks, memory, acc, cells, ccell);
+							else for (int h = 0; h < rtimes; ++h) ProcessCommands(subtoks, memory, acc, cells, acell);
 						}	
-						
 						found = true;	
 						break;
 					}
