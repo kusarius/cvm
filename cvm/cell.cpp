@@ -55,20 +55,22 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 	std::vector<std::string> cells, int& acell)
 {
 	int toks_size = toks.size();
-	for (int i = 0; i < toks_size; ++i)
-		if (toks[i].Command == "print" || toks[i].Command == "println") {
-			std::string lend = toks[i].Command == "println" ? "\n" : "";
+	std::string com = "";
+	for (int i = 0; i < toks_size; ++i) {
+		com = toks[i].Command;
+		if (com == "print" || com == "println") {
+			std::string lend = com == "println" ? "\n" : "";
 			if (toks[i].Arg == "data") std::cout << cells[acell] << lend;
 			else if (toks[i].Arg == "memory") std::cout << memory << lend;
 			else if (toks[i].Arg == "acc") std::cout << acc << lend;
 			else {
-				if (toks[i].Command == toks[i].Arg || toks[i].Arg.length() < 2)
+				if (com == toks[i].Arg || toks[i].Arg.length() < 2)
 					WriteError("Argument expected", i + 1);
 				else std::cout << REMOVE_BRACKETS(toks[i].Arg) << lend;
 			}
 		}
-		else if (toks[i].Command == "set") {
-			if (toks[i].Command == toks[i].Arg) WriteError("Argument expected", i + 1);
+		else if (com == "set") {
+			if (com == toks[i].Arg) WriteError("Argument expected", i + 1);
 			else {
 				if (toks[i].Arg == "memory") cells[acell] = memory;
 				else if (toks[i].Arg == "acc") cells[acell] = acc;
@@ -76,8 +78,8 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 				else cells[acell] = REMOVE_BRACKETS(toks[i].Arg);
 			}
 		} 
-		else if (toks[i].Command == "memory") {
-			if (toks[i].Command == toks[i].Arg) WriteError("Argument expected", i + 1);
+		else if (com == "memory") {
+			if (com == toks[i].Arg) WriteError("Argument expected", i + 1);
 			else {
 				if (toks[i].Arg == "data") memory = cells[acell];
 				else if (toks[i].Arg == "acc") memory = acc;
@@ -85,9 +87,9 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 				else memory = REMOVE_BRACKETS(toks[i].Arg);
 			}
 		}
-		else if (toks[i].Command == "right" || toks[i].Command == "left") {
-			int direction = toks[i].Command == "right" ? 1 : -1;
-			if (toks[i].Arg == toks[i].Command) acell += direction;
+		else if (com == "right" || com == "left") {
+			int direction = com == "right" ? 1 : -1;
+			if (toks[i].Arg == com) acell += direction;
 			else {
 				char* endptr;
 				const char* ptr = toks[i].Arg.c_str();
@@ -101,19 +103,19 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 				acell = cells.size() - 1; 
 			}
 		}
-		else if (toks[i].Command == "add" || toks[i].Command == "sub" ||
-				toks[i].Command == "mul" || toks[i].Command == "div" ||
-				toks[i].Command == "sqrt" || toks[i].Command == "pow" ||
-				toks[i].Command == "min" || toks[i].Command == "max")
+		else if (com == "add" || com == "sub" ||
+				com == "mul" || com == "div" ||
+				com == "sqrt" || com == "pow" ||
+				com == "min" || com == "max")
 		{
 			float arg1, arg2; // Операнды
 			arg1 = Utils::StringToNum<float>(cells[acell]);
-			if (toks[i].Command != "sqrt") arg2 = Utils::StringToNum<float>(memory);
+			if (com != "sqrt") arg2 = Utils::StringToNum<float>(memory);
 			if (arg1 == INT_MIN || arg2 == INT_MIN) { // Если недопустимые аргументы
 				WriteError("Invalid arguments!", i + 1);
 				continue;
 			}
-			std::string com = toks[i].Command;
+			std::string com = com;
 			if (com == "add") acc = Utils::ToString<float>(arg1 + arg2);
 			else if (com == "sub") acc = Utils::ToString<float>(arg1 - arg2);
 			else if (com == "mul") acc = Utils::ToString<float>(arg1 * arg2);
@@ -123,26 +125,58 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 			else if (com == "min") acc = Utils::ToString<float>(arg1 < arg2 ? arg1 : arg2);
 			else if (com == "max") acc = Utils::ToString<float>(arg1 > arg2 ? arg1 : arg2);
 		}
-		else if (toks[i].Command == "if" || toks[i].Command == "ifnot") {
-			if (toks[i].Command == toks[i].Arg) WriteError("Argument expected", i + 1);
+		else if (com == "if" || com == "ifnot") {
+			if (com == toks[i].Arg) WriteError("Argument expected", i + 1);
 			else {
 				std::string arg = REMOVE_BRACKETS(toks[i].Arg);
-				bool val = toks[i].Command == "if" ? false : true;
+				bool val = com == "if" ? false : true;
+				int nesting = 1; // Степень вложенности
 				if ((cells[acell] == arg) == val) {
 					bool found = false;
-					for (int c = i + 1; c < toks_size; ++c)
+					for (int c = i + 1; c < toks_size; ++c) {
+						if (toks[c].Command == "if" || toks[c].Command == "ifnot") nesting++;
 						if (toks[c].Command == "endif") {
-							i = c;
-							found = true;
-							break;
+							nesting--;
+							if (nesting < 1) {
+								i = c; // Переходим на строку кода с endif
+								found = true;
+								break;
+							}
 						}
+					}
 					if (found == false) WriteError("\"endif\" expected", i + 1);
 				}
 			}
 		}
-		else if (toks[i].Command == "endif") { }
-		else if (toks[i].Command == "exit") break;
+		else if (com == "repeat") {
+			bool found = false;
+			int nesting = 1; // Степень вложенности цикла
+			for (int c = i + 1; c < toks_size; ++c) {
+				if (toks[c].Command == "repeat") nesting++;
+				if (toks[c].Command == "endrepeat") {
+					nesting--;
+					if (nesting < 1) {
+						std::vector<Cell::CellToken> subtoks(toks.begin() + i + 1, toks.begin() + c - 1);
+						
+						if (com = toks[i].Arg) 
+							while (true) ProcessCommands(subtoks, memory, acc, cells, ccell);
+						else {
+							int rtimes = Utils::StringToNum(toks[i].Arg);
+							if (rtimes == INT_MIN) WriteError("Invalid argument", i + 1);
+							else for (int h = 0; h < rtimes; ++h) ProcessCommands(subtoks, memory, acc, cells, ccell);
+						}	
+						
+						found = true;	
+						break;
+					}
+				}
+			}
+			if (found == false) WriteError("\"endrepeat\" expected", i + 1);
+		}
+		else if (com == "endif" || com == "endrepeat") { }
+		else if (com == "exit") break;
 		else WriteError("Unknown command", i + 1);
+	}
 }
 
 void Cell::CellLang::Interpret(std::vector<std::string> code_lines)
