@@ -27,6 +27,7 @@ void Cell::CellLang::WriteError(std::string description, int comnumber)
 {
 	std::cout << std::endl << "Error in command " << comnumber << ": "
 		<< description << std::endl;
+	this->isError = true;
 }
 
 // Обрабатывает команды import
@@ -57,6 +58,7 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 	int toks_size = toks.size();
 	std::string com = ""; // Команда в текущей строке
 	for (int i = 0; i < toks_size; ++i) {
+		if (isError) break;
 		com = toks[i].Command;
 		if (com == "print" || com == "println") {
 			std::string lend = com == "println" ? "\n" : "";
@@ -168,7 +170,39 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 			}
 			if (found == false) WriteError("\"endrepeat\" expected", i + 1);
 		}
-		else if (com == "endif" || com == "endrepeat") { }
+		else if (com == "function") {
+			if (com == toks[i].Arg) WriteError("Function name expected", i + 1);
+			else {
+				int funclist_elem = functions.size() - 1;
+				bool found_same_func = false;
+				for (; funclist_elem >= 0; --funclist_elem)
+					if (functions[funclist_elem].Name == toks[i].Arg) {
+						WriteError("The function called " + toks[i].Arg + " is already defined", i + 1);
+						found_same_func = true;
+						break;
+					}
+				if (found_same_func) break;
+				
+				int endfunc_line = i + 1;
+				while (toks[endfunc_line].Arg != "endfunc" 
+					&& endfunc_line < toks_size - 1) endfunc_line++;
+				if (toks[endfunc_line].Arg != "endfunc") {
+					WriteError("\"endfunc\" expected", i + 1); 
+					break;
+				}
+				
+				Cell::CellFunction function = Cell::CellFunction(toks[i].Arg, i, endfunc_line);
+				functions.push_back(function);
+				i = function.EndLine; // Меняем текущую строку
+			}
+		}
+		else if (com == "call") {
+			if (com == toks[i].Arg) WriteError("Function name expected", i + 1);
+			else {
+							
+			}
+		}
+		else if (com == "endif" || com == "endrepeat"|| com == "endfunc") { }
 		else if (com == "exit") break;
 		else WriteError("Unknown command", i + 1);
 	}
@@ -179,6 +213,7 @@ void Cell::CellLang::Interpret(std::vector<std::string> code_lines)
 	std::vector<std::string> cells(10, "");
 	std::string memory = "", acc = "";
 	int ccell = 0; // Номер активной ячейки
+	functions.clear();
 
 	RefactorCode(code_lines);
 	Link(code_lines);

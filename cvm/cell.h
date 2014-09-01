@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "cell_token.h"
+#include "cell_function.h"
 
 namespace Cell
 {
@@ -11,9 +12,15 @@ namespace Cell
 	{
 	public:
 		void Interpret(std::vector<std::string> code_lines);
-		static void WriteError(std::string description, int line);
+		void WriteError(std::string description, int line);
 
+		CellLang(): 
+			isError(false)
+		{ }
 	private:
+		bool isError;
+		std::vector<CellFunction> functions;
+	
 		void RefactorCode(std::vector<std::string>& code_lines);
 		void Link(std::vector<std::string>& toks);
 		std::vector<CellToken> GetTokens(std::vector<std::string> code_lines);
