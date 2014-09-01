@@ -199,7 +199,18 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 		else if (com == "call") {
 			if (com == toks[i].Arg) WriteError("Function name expected", i + 1);
 			else {
-							
+				bool found = false;
+				int elemfunc = functions.size() - 1;
+				for (; elemfunc >= 0; --elemfunc) 
+					if (functions[elemfunc].Name == toks[i].Arg) {
+						found = true;
+						std::vector<Cell::CellToken> function_toks(
+							toks.begin() + functions[elemfunc].StartLine + 1,
+							toks.begin() + functions[elemfunc].EndLine
+						);
+						ProcessCommands(function_toks, memory, acc, cells, acell);
+					}
+				if (found == false) WriteError("Function \"" + toks[i].Arg + "\" does not exist", i + 1);
 			}
 		}
 		else if (com == "endif" || com == "endrepeat"|| com == "endfunc") { }
