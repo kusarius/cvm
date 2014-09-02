@@ -167,15 +167,17 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 		else if (com == "function") {
 			if (com == toks[i].Arg) WriteError("Function name expected", i + 1);
 			else {
-				int funclist_elem = functions.size() - 1;
-				bool found_same_func = false;
-				for (; funclist_elem >= 0; --funclist_elem)
-					if (functions[funclist_elem].Name == toks[i].Arg) {
-						WriteError("The function called " + toks[i].Arg + " is already defined", i + 1);
-						found_same_func = true;
-						break;
-					}
-				if (found_same_func) break;
+				if (functions.size() != 0) {
+					int funclist_elem = functions.size() - 1;
+					bool found_same_func = false;
+					for (; funclist_elem >= 0; --funclist_elem)
+						if (functions[funclist_elem].Name == toks[i].Arg) {
+							WriteError("The function called " + toks[i].Arg + " is already defined", i + 1);
+							found_same_func = true;
+							break;
+						}
+					if (found_same_func) break;
+				}
 				
 				int endfunc_line = i + 1;
 				while (toks[endfunc_line].Arg != "endfunc" 
@@ -211,15 +213,17 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 			if (com == toks[i].Arg) WriteError("File name expected", i + 1);
 			else {
 				std::string file_name = REMOVE_BRACKETS(toks[i].Arg);
-				std::string file_text = Utils::ReadTextFromFile((char*)file_name.c_str());
-				std::vector<std::string> code_lines = Utils::Split(file_text, '\n');
+				std::string file_text = Utils::ReadTextFromFile(file_name.c_str());
 				if (file_text != "TFDNE!") {
+					std::vector<std::string> code_lines = Utils::Split(file_text, '\n');
 					RefactorCode(code_lines);
 					std::vector<Cell::CellToken> tokens = GetTokens(code_lines);
-					toks.insert(toks.end(), tokens.begin(), tokens.end());
-					continue;
+					toks.erase(toks.begin() + i); // Заменяем команду импорта кодом из файла
+					toks.insert(toks.begin() + i, tokens.begin(), tokens.end());
+					toks_size = toks.size();
+					i--; // Так так команда импорта была удалена, код в текущей строке нужно выполнять снова
 				}
-				WriteError("The file \"" + file_name + "\" does not exist", i + 1);
+				else WriteError("The file \"" + file_name + "\" does not exist", i + 1);
 			}
 		}
 		else if (com == "endif" || com == "endrepeat"|| com == "endfunc") { }

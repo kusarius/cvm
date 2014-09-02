@@ -34,7 +34,7 @@ public:
 		return res;
 	}
 
-	static std::string ReadTextFromFile(char* file_name)
+	static std::string ReadTextFromFile(const char* file_name)
 	{
 		std::ifstream f(file_name);
 		if (!f) return "TFDNE!"; // The File Does Not Exist! 

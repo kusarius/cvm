@@ -71,6 +71,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="cell.h" />
+    <ClInclude Include="cell_function.h" />
     <ClInclude Include="cell_token.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
