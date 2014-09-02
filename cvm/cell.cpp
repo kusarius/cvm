@@ -30,12 +30,6 @@ void Cell::CellLang::WriteError(std::string description, int comnumber)
 	this->isError = true;
 }
 
-// Обрабатывает команды import
-void Cell::CellLang::Link(std::vector<std::string>& toks)
-{
-	// ...
-}
-
 // Разделяет код на токены
 std::vector<Cell::CellToken> Cell::CellLang::GetTokens(std::vector<std::string> code_lines)
 {
@@ -213,6 +207,21 @@ void Cell::CellLang::ProcessCommands(std::vector<Cell::CellToken> toks, std::str
 				if (found == false) WriteError("Function \"" + toks[i].Arg + "\" does not exist", i + 1);
 			}
 		}
+		else if (com == "import") {
+			if (com == toks[i].Arg) WriteError("File name expected", i + 1);
+			else {
+				std::string file_name = REMOVE_BRACKETS(toks[i].Arg);
+				std::string file_text = Utils::ReadTextFromFile((char*)file_name.c_str());
+				std::vector<std::string> code_lines = Utils::Split(file_text, '\n');
+				if (file_text != "TFDNE!") {
+					RefactorCode(code_lines);
+					std::vector<Cell::CellToken> tokens = GetTokens(code_lines);
+					toks.insert(toks.end(), tokens.begin(), tokens.end());
+					continue;
+				}
+				WriteError("The file \"" + file_name + "\" does not exist", i + 1);
+			}
+		}
 		else if (com == "endif" || com == "endrepeat"|| com == "endfunc") { }
 		else if (com == "exit") break;
 		else WriteError("Unknown command", i + 1);
@@ -227,7 +236,6 @@ void Cell::CellLang::Interpret(std::vector<std::string> code_lines)
 	functions.clear();
 
 	RefactorCode(code_lines);
-	Link(code_lines);
 	std::vector<Cell::CellToken> toks = GetTokens(code_lines);
 
 	ProcessCommands(toks, memory, acc, cells, ccell);
